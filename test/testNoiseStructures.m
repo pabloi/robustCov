@@ -6,16 +6,24 @@
 %contamination with outlier samples).
 %TODO: add measure of dispersion/worst case performance
 %%
+addpath(genpath('../'))
+%%
 clearvars
 fh=figure;
 cut=90;
     M=2;
-    Nsamp=1e3;
+    Nsamp=3e2;
     Nreps=1e2;
+    rmax=30;
+
 %% Test with outliers: single axis normal noise
 for k=1:4
-    clear ae at ae2 ae3
-    for r=1:11 %Percent outliers
+    at=nan(rmax,1);
+    ae=nan(rmax,1);
+    ae2=nan(rmax,1);
+    ae3=nan(rmax,1);
+    aeA=nan(rmax,1);
+    for r=1:2:rmax %Percent outliers
         Qsqrt=randn(M,M);
         Q=Qsqrt*Qsqrt';
         
@@ -24,6 +32,7 @@ for k=1:4
         Qest2=nan(M,M,Nreps);
         Qest3=nan(M,M,Nreps);
         Qtrue=nan(M,M,Nreps);
+        QestA=nan(M,M,Nreps);
         for i=1:Nreps
             % Generate data:
             X=Qsqrt*randn(size(Q,2),Nsamp);
@@ -54,6 +63,7 @@ for k=1:4
             Qest2(:,:,i)=robCov(X,100-2*(100-cut)); %My robust estimate
             Qest3(:,:,i)=robCov(X,100-.5*(100-cut)); %My robust estimate
             Qtrue(:,:,i)=X*X'/size(X,2); %Standard, MLE, estimate given a known mean
+            QestA(:,:,i)=robCov(X); %My robust estimate, auto
         end
 
         % Visualize
@@ -61,6 +71,7 @@ for k=1:4
         ae(r)=sqrt(mean(sum(sum((Q-Qest).^2,1),2),3))/norm(Q,'fro');
         ae2(r)=sqrt(mean(sum(sum((Q-Qest2).^2,1),2),3))/norm(Q,'fro');
         ae3(r)=sqrt(mean(sum(sum((Q-Qest3).^2,1),2),3))/norm(Q,'fro');
+        aeA(r)=sqrt(mean(sum(sum((Q-QestA).^2,1),2),3))/norm(Q,'fro');
     end
     subplot(4,2,2*k-1)
     p1=scatter(1:length(at),at,'filled','DisplayName','MLE');
@@ -68,6 +79,7 @@ for k=1:4
     p3=scatter(1:length(ae),ae2,'filled','DisplayName',['Robust, reject=' num2str(2*(100-cut)) '%']);
     p2=scatter(1:length(ae),ae,'filled','DisplayName',['Robust, reject=' num2str(100-cut) '%']);
     p4=scatter(1:length(ae),ae3,'filled','DisplayName',['Robust, reject=' num2str(.5*(100-cut)) '%']);
+    p5=scatter(1:length(ae),aeA,'filled','DisplayName',['Robust, reject= AUTO']);
     title([num2str(M) ' x ' num2str(M) ' matrix, Nreps=' num2str(Nreps) ', Nsamples=' num2str(Nsamp) ', ' nameNoise ' noise'])
     xlabel('% outliers')
     ylabel('|\hat{Q}-Q|_F / |Q|_F')

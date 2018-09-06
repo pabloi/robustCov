@@ -20,31 +20,51 @@ function Q=robCov(w,prc,Niter)
 %Q: MxM covariance estimate
 %See also: robustCov, estimateParams
 
-%To do: is it worth it to iterate the procedure to converge on the outlier
-%samples?
+%To do: 
+%1) is it worth it to iterate the procedure to converge on the outlier samples?
+%2) Instead of hard-coding the % of samples to discard, do auto-setting:
+%compute the z^2 scores percentiles, and set the cut-off whenever the
+%empirical percentiles are outside some window of the expected percentiles
+%(e.g. if the sample datapoint at the 95% percentile is given a percentile score of more than 96% or less than 94%, cut off there) 
 
 [nD,M]=size(w);
-if nargin<2 || isempty(prc)
-    prc=90;
-elseif prc<1 %Assuming percentile was given in [0,1] range
-    prc=round(100*prc);
-end
 if nargin<3 || isempty(Niter)
     Niter=2;
 end
-%First moment of F_{nD,M-nD} = (M-nD)/(M-nD-2)  (~1 if M-nD>>2)
-%(approx) Partial first moment to th 90th-percentile:
-x=[0:.01:finv(prc/100,nD,M-nD)];
-fp=.01*sum(x.*fpdf(x,nD,M-nD));
-k=1/fp; % k is a factor to account for the usage of only the 'first' 90% samples and still get an ~unbiased estimate.
+if nargin<2 || isempty(prc)
+    prc=[];%90; %Default: 90%
+    %Change to default finds the 'natural' cut-off. Test
+    %Niter=5; %This requires more iterations
+elseif prc<1 %Assuming percentile was given in [0,1] range
+    prc=round(100*prc);
+end
 
+
+k=getScale(prc,nD,M);
 w2=w*w';
 Q=(w2)/M; %Standard estimate, to init
+m=[]; %Presuming zero-mean data.
 for i=1:Niter
-    y=sum(w.*(Q\w),1); %if Q,w were computed on demeaned data, this is distributed as t^2 ~ Hotelling's T^2 = nD*(M-1)/(M-nD) F_{nD,M-nD}, see https://en.wikipedia.org/wiki/Hotelling%27s_T-squared_distribution
-    yPRC=prctile(y,prc);
+    [p,y]=z2prctile(w,Q,m); %if w~N(m,Q) this is distributed as t^2 ~ Hotelling's T^2 = nD*(M-1)/(M-nD) F_{nD,M-nD}, see https://en.wikipedia.org/wiki/Hotelling%27s_T-squared_distribution  
+    if ~isempty(prc) %prc level is given
+        yPRC=prctile(y,prc);
+    else %Auto-choose prc:
+        pEmp=[1:length(p)]/length(p);
+        aux=(sort(p)-pEmp); %Looking for positive values at the end
+        prcAuto=100*find(aux<-2/M,1,'last')/length(p); %This is a conservative estimate, the true number of non-outliers is probably larger
+        %prcAuto=100*find(aux==max(aux),1,'last')/length(p); 
+        prcAuto=100-2*(100-prcAuto);
+        prcAuto=max(prcAuto,60); %No more than 40% outliers
+        %ALT: just use the point of max difference between the curves.
+        %figure; plot(pEmp,sort(p)-pEmp); grid on; axis equal; hold on; plot(prcAuto/100,0,'kx')
+        %if prcAuto==100
+        %    prcAuto=99.9; %At least 0.1% discard
+        %end
+        yPRC=prctile(y,prcAuto);
+        k=getScale(prcAuto,nD,M);
+    end
     wRob=w(:,y<yPRC);
-    Q=k*(wRob*wRob')/M;
+    Q=(wRob*wRob')/(k*M);
 end
 
 %Some debugging:
@@ -70,4 +90,17 @@ end
 % plot(a99.*x,a99.*y,col{j})
 % end
 % %TODO: deal with auto-correlated (ie not white) noise for better estimates.
+end
+
+function k=getScale(prc,nD,M)
+%First moment of F_{nD,M-nD} = (M-nD)/(M-nD-2)  (~1 if M-nD>>2)
+%(approx) Partial first moment to th prcth-percentile:
+if prc==100
+    k=1; %This needs hardcoding because finv is undefined for 100th percentile
+else
+X1=finv(prc/100,nD,M-nD);
+dx=X1/1e4;
+x=[(dx/2):dx:X1];
+k=dx*sum(x.*fpdf(x,nD,M-nD)); % k is a factor to account for the usage of only the 'first' 90% samples and still get an ~unbiased estimate.
+end
 end

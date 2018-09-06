@@ -1,9 +1,17 @@
+%%
+addpath(genpath('../'))
 %% Compare performance and runtime to robustCov()
 fh=figure;
 clear ae at ae2 ae3 rcTime rc2Time time
 M=6;
 Nsamp=1e3;
-for r=1:5 %Percent outliers
+rmax=5;
+at=nan(rmax,1);
+ae=nan(rmax,1);
+ae2=nan(rmax,1);
+ae3=nan(rmax,1);
+aeA=nan(rmax,1);
+for r=1:rmax %Percent outliers
 Qsqrt=randn(M,M);
 Q=Qsqrt*Qsqrt';
 Nreps=1e2;
@@ -51,8 +59,8 @@ set(gca,'YScale','log')
 subplot(2,1,2)
 p1=scatter([1:length(at)]*2,rt,'filled','DisplayName','MLE');
 hold on
-p3=scatter([1:length(at)]*2,re,'filled','DisplayName',['RobCov()']);
-p2=scatter([1:length(at)]*2,re2,'filled','DisplayName',['RobustCov()']);
+p3=scatter([1:length(at)]*2,re,'filled','DisplayName',['robCov()']);
+p2=scatter([1:length(at)]*2,re2,'filled','DisplayName',['robustCov()']);
 xlabel('% outliers')
 ylabel('Avg. run time (s)')
 legend
