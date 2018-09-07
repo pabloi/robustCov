@@ -1,3 +1,4 @@
+addpath(genpath('../'))
 %%
 clearvars
 fh=figure;
