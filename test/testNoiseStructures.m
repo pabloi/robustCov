@@ -12,7 +12,7 @@ clearvars
 fh=figure;
 cut=90;
     M=2;
-    Nsamp=3e2;
+    Nsamp=1e2;
     Nreps=1e2;
     rmax=30;
 
@@ -23,7 +23,7 @@ for k=1:4
     ae2=nan(rmax,1);
     ae3=nan(rmax,1);
     aeA=nan(rmax,1);
-    for r=1:2:rmax %Percent outliers
+    for r=1:3:rmax %Percent outliers
         Qsqrt=randn(M,M);
         Q=Qsqrt*Qsqrt';
         
@@ -59,19 +59,19 @@ for k=1:4
             end
             X(:,noiseIdx)=noise; 
             % Estimate:
-            Qest(:,:,i)=robCov(X,cut); %My robust estimate
-            Qest2(:,:,i)=robCov(X,100-2*(100-cut)); %My robust estimate
-            Qest3(:,:,i)=robCov(X,100-.5*(100-cut)); %My robust estimate
+            [Qest(:,:,i),idx1]=robCov(X,cut); %My robust estimate
+            [Qest2(:,:,i),idx2]=robCov(X,100-2*(100-cut)); %My robust estimate
+            [Qest3(:,:,i),idx3]=robCov(X,100-.5*(100-cut)); %My robust estimate
             Qtrue(:,:,i)=X*X'/size(X,2); %Standard, MLE, estimate given a known mean
-            QestA(:,:,i)=robCov(X); %My robust estimate, auto
+            [QestA(:,:,i),idxA]=robCov(X); %My robust estimate, auto
         end
 
         % Visualize
-        at(r)=sqrt(mean(sum(sum((Q-Qtrue).^2,1),2),3))/norm(Q,'fro');
-        ae(r)=sqrt(mean(sum(sum((Q-Qest).^2,1),2),3))/norm(Q,'fro');
-        ae2(r)=sqrt(mean(sum(sum((Q-Qest2).^2,1),2),3))/norm(Q,'fro');
-        ae3(r)=sqrt(mean(sum(sum((Q-Qest3).^2,1),2),3))/norm(Q,'fro');
-        aeA(r)=sqrt(mean(sum(sum((Q-QestA).^2,1),2),3))/norm(Q,'fro');
+        at(r)=mean(sqrt(sum(sum((Q-Qtrue).^2,1),2)),3)/norm(Q,'fro');
+        ae(r)=mean(sqrt(sum(sum((Q-Qest).^2,1),2)),3)/norm(Q,'fro');
+        ae2(r)=mean(sqrt(sum(sum((Q-Qest2).^2,1),2)),3)/norm(Q,'fro');
+        ae3(r)=mean(sqrt(sum(sum((Q-Qest3).^2,1),2)),3)/norm(Q,'fro');
+        aeA(r)=mean(sqrt(sum(sum((Q-QestA).^2,1),2)),3)/norm(Q,'fro');
     end
     subplot(4,2,2*k-1)
     p1=scatter(1:length(at),at,'filled','DisplayName','MLE');
@@ -106,5 +106,7 @@ for k=1:4
         eh=drawEllipse2D(pinv(5*Q));
         eh.Color=[0 0 0];
         eh.LineWidth=2;
+        scatter(X(1,idxA),X(2,idxA),8,'g','filled')
+        scatter(X(1,idx1),X(2,idx1),3,'m','filled')
     end
 end
