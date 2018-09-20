@@ -1,4 +1,4 @@
-function [Q,outliers]=robCov(w,prc,Niter)
+function [Q,outliers,prc]=robCov(w,prc,Niter)
 %robCov is a robust covariance matrix estimation of data. Useful if data may contain outliers.
 %It uses only an 'inner' percentage of the data (i.e. data lying inside a certain
 %ellipsoid) to estimate the covariance matrix. If data comes from a
@@ -58,7 +58,7 @@ for i=1:Niter
         y=z2score(w,Q,m); %if w~N(m,Q) this is distributed as t^2 ~ Hotelling's T^2 = nD*(M-1)/(M-nD) F_{nD,M-nD}, see https://en.wikipedia.org/wiki/Hotelling%27s_T-squared_distribution
         yPRC=prctile(y,prc);
     else %Auto-choose prc:
-        [p,y]=z2prctile(w,Q,m); 
+        [p,y]=z2prctile(w,Q,m,[],M); %Computing z-scores and associated percentiles given the underlying distribution
         pEmp=[1:length(p)]/length(p);
         aux=(sort(p)-pEmp); %Divergence between empirical (ranking) percentiles, and expected percentiles given the latest covariance estimate
         prcOut1=max(aux); %Peak
@@ -77,6 +77,9 @@ for i=1:Niter
     Q=(wRob*wRob')/(k*M);
 end
 outliers=~idx;
+if isempty(prc)
+    prc=prcAuto;
+end
 end
 
 function k=getScale(prc,nD,M,fc)
