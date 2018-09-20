@@ -15,7 +15,7 @@ function z=z2score(y,Q,m,icQ)
 if nargin<3 || isempty(m)
     m=zeros(size(y,1),1);
 end
-if nargin<4 || isempty(iQ)
+if nargin<4 || isempty(icQ)
     ch_Q=cholcov(Q);
     w=ch_Q'\(y-m);
 else %Cholesky decomp of inverse of Q is given directly, no need to invert Q
