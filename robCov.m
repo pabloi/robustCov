@@ -50,7 +50,12 @@ else
     k=getScale(prc,nD,M,fc);
 end
 
-Q=norm(w,'fro').^2/(M*nD)*eye(nD); %MLE spherical estimate
+x=[.005:.01:finv(prc/100,nD,M-nD)]; 
+k=.01*sum(x.*fpdf(x,nD,M-nD)); 
+
+%Q=norm(w,'fro').^2/(M*nD)*eye(nD); %MLE spherical estimate
+w2=w*w'; 
+Q=(w2)/M; %Standard estimate, to init 
 m=[]; %Presuming zero-mean data.
 
 for i=1:Niter
