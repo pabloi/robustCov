@@ -12,7 +12,7 @@ Nsamp=1e3;
 for M=1:10
 Qsqrt=randn(M,M);
 Q=Qsqrt*Qsqrt';
-Nreps=1e2;
+Nreps=1e3;
 % Estimate:
 
 Qest=nan(M,M,Nreps);
@@ -31,10 +31,10 @@ Qtrue2(:,:,i)=X(:,1:Nsamp*cut/100)*X(:,1:Nsamp*cut/100)'/(Nsamp*cut/100); %Stand
 end
 
 % Visualize
-at(M)=sqrt(mean(sum(sum((Q-Qtrue).^2,1),2),3))/norm(Q,'fro');
-at2(M)=sqrt(mean(sum(sum((Q-Qtrue2).^2,1),2),3))/norm(Q,'fro');
-ae(M)=sqrt(mean(sum(sum((Q-Qest).^2,1),2),3))/norm(Q,'fro');
-ae2(M)=sqrt(mean(sum(sum((Q-Qest2).^2,1),2),3))/norm(Q,'fro');
+at(M)=mean(sqrt(sum(sum((Q-Qtrue).^2,1),2)),3)/norm(Q,'fro');
+at2(M)=mean(sqrt(sum(sum((Q-Qtrue2).^2,1),2)),3)/norm(Q,'fro');
+ae(M)=mean(sqrt(sum(sum((Q-Qest).^2,1),2)),3)/norm(Q,'fro');
+ae2(M)=mean(sqrt(sum(sum((Q-Qest2).^2,1),2)),3)/norm(Q,'fro');
 end
 p1=scatter(1:length(at),at,'filled','DisplayName','MLE');
 hold on
@@ -71,9 +71,9 @@ Qtrue(:,:,i)=X*X'/size(X,2); %Standard, MLE, estimate given a known mean
 end
 
 % Visualize
-at(j)=sqrt(mean(sum(sum((Q-Qtrue).^2,1),2),3))/norm(Q,'fro');
-ae(j)=sqrt(mean(sum(sum((Q-Qest).^2,1),2),3))/norm(Q,'fro');
-ae2(j)=sqrt(mean(sum(sum((Q-Qest2).^2,1),2),3))/norm(Q,'fro');
+at(j)=mean(sqrt(sum(sum((Q-Qtrue).^2,1),2)),3)/norm(Q,'fro');
+ae(j)=mean(sqrt(sum(sum((Q-Qest).^2,1),2)),3)/norm(Q,'fro');
+ae2(j)=mean(sqrt(sum(sum((Q-Qest2).^2,1),2)),3)/norm(Q,'fro');
 end
 p1=scatter(1:length(at),at,'filled','DisplayName','MLE');
 hold on
@@ -114,10 +114,10 @@ Qtrue(:,:,i)=X*X'/size(X,2); %Standard, MLE, estimate given a known mean
 end
 
 % Visualize
-at(r)=sqrt(mean(sum(sum((Q-Qtrue).^2,1),2),3))/norm(Q,'fro');
-ae(r)=sqrt(mean(sum(sum((Q-Qest).^2,1),2),3))/norm(Q,'fro');
-ae2(r)=sqrt(mean(sum(sum((Q-Qest2).^2,1),2),3))/norm(Q,'fro');
-ae3(r)=sqrt(mean(sum(sum((Q-Qest3).^2,1),2),3))/norm(Q,'fro');
+at(r)=mean(sqrt(sum(sum((Q-Qtrue).^2,1),2)),3)/norm(Q,'fro');
+ae(r)=mean(sqrt(sum(sum((Q-Qest).^2,1),2)),3)/norm(Q,'fro');
+ae2(r)=mean(sqrt(sum(sum((Q-Qest2).^2,1),2)),3)/norm(Q,'fro');
+ae3(r)=mean(sqrt(sum(sum((Q-Qest3).^2,1),2)),3)/norm(Q,'fro');
 end
 p1=scatter(1:length(at),at,'filled','DisplayName','MLE');
 hold on
@@ -129,3 +129,6 @@ xlabel('% outliers')
 ylabel('|\hat{Q}-Q|_F / |Q|_F')
 legend
 set(gca,'YScale','log')
+
+%%
+savefig(gcf,'testParams.fig')

@@ -47,11 +47,9 @@ else
     if prc<1 %Assuming percentile was given in [0,1] range
     prc=round(100*prc);
     end
-    k=getScale(prc,nD,M,fc);
+    M2=round(M*prc/100); 
+    k=getScale(prc,nD,M2,fc);
 end
-
-x=[.005:.01:finv(prc/100,nD,M-nD)]; 
-k=.01*sum(x.*fpdf(x,nD,M-nD)); 
 
 %Q=norm(w,'fro').^2/(M*nD)*eye(nD); %MLE spherical estimate
 w2=w*w'; 
@@ -75,7 +73,8 @@ for i=1:Niter
         prcAuto=max(100*(1-prcOut),60); %No more than 40% outliers
         %plot([1:M]/M,aux); plot(1-prcOut1,0,'kx'); plot(1-prcOut2,0,'ko'); plot(prcAuto/100,0,'rd'); drawnow;
         yPRC=prctile(y,prcAuto);
-        k=getScale(prcAuto,nD,M,fc);
+        M2=round(M*prcAuto/100); 
+        k=getScale(prcAuto,nD,M2,fc);
     end
     idx=y<yPRC;
     wRob=w(:,idx);

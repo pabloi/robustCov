@@ -76,9 +76,11 @@ p1=scatter([1:length(at)]*2,rt,'filled','DisplayName','MLE');
 hold on
 p3=scatter([1:length(at)]*2,re,'filled','DisplayName',['robCov(AUTO)']);
 p2=scatter([1:length(at)]*2,re2,'filled','DisplayName',['robustCov()']);
-p4=scatter([1:length(at)]*2,re,'filled','DisplayName',['robCov(90%)']);
+p4=scatter([1:length(at)]*2,re3,'filled','DisplayName',['robCov(90%)']);
 xlabel('% outliers')
 ylabel('Avg. run time (s)')
 legend
 set(gca,'YScale','log')
 title('Run time comparison to robustcov()')
+%%
+savefig(gcf,'testCompare.fig')
