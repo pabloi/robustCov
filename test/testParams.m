@@ -67,7 +67,7 @@ X=Qsqrt*randn(size(Q,2),10^j);
 % Estimate:
 Qest(:,:,i)=robCov(X,cut); %My robust estimate
 Qest2(:,:,i)=robCov(X,100-2*(100-cut)); %My robust estimate
-Qtrue(:,:,i)=X*X'/size(X,2); %Standard, MLE, estimate given a known mean
+Qtrue(:,:,i)=X*X'/size(X,2); %Standard, MLE, estimate given a ZERO mean
 end
 
 % Visualize
