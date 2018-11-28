@@ -56,6 +56,7 @@ m=[]; %Presuming zero-mean data.
 
 
 for i=1:Niter
+    %Q
     if ~isempty(prc) %prc level is given
         y=z2score(w,Q,m); %if w~N(m,Q) this is distributed as t^2 ~ Hotelling's T^2 = nD*(M-1)/(M-nD) F_{nD,M-nD}, see https://en.wikipedia.org/wiki/Hotelling%27s_T-squared_distribution
         yPRC=prctile(y,prc);

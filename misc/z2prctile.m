@@ -1,12 +1,12 @@
 function [p,z]=z2prctile(y,Q,m,iQ,Qdof)
-%Percentile corresponding to observations of multivariate normal data y.
+%Percentile (p-value) corresponding to observations of multivariate normal data y.
 %Computed through squared z-scoring. Equivalent to Mahalanobis distance.
 %z=(y-m)'*inv(Q)*(y-m)
-%If y~N(m,Q) (iid), and Q~Wishart(I,M), this is distributed as 
+%If y~N(m,Q) (iid), and Q~Wishart(I,M), this is distributed as
 %t^2 ~ Hotelling's T^2 = nD*(M-1)/(M-nD) F_{nD,M-nD}
 %Where nD is the dimension of 'y' and M is the number of samples used to
-%estimate Q (Q~Wishart(I,M)) 
-%Alternatively, if Q is known (rather than sampled from a Wishart), then: 
+%estimate Q (Q~Wishart(I,M))
+%Alternatively, if Q is known (rather than sampled from a Wishart), then:
 % z ~ X^2(
 %see https://en.wikipedia.org/wiki/Hotelling%27s_T-squared_distribution
 %INPUTS:
@@ -18,7 +18,7 @@ function [p,z]=z2prctile(y,Q,m,iQ,Qdof)
 %OUTPUT:
 %p: percentile corresponding to the z^2 score of the data
 %z: z^2 score of data
-%See also: s2score
+%See also: z2score
 
 if nargin<3
     m=[];
@@ -32,15 +32,9 @@ z=z2score(y,Q,m,iQ);
 
 %Second, compute percentile:
 [nD]=size(y,1);
-if nargin<5 %Degrees of Freedom of covariance matrix not given, assuming it is the exact covariance.
-    p=chi2cdf(z,nD); %~central chi-square distribution with nD degrees of freedom
-else
-    M=Qdof;
-    p=fcdf(z*(M-nD)/(nD*(M-1)),nD,M-nD); %~ Hotelling's T^2 = nD*(M-1)/(M-nD) F_{nD,M-nD}
-end 
-
-
-
-
+if nargin<5
+    Qdof=[];
+end
+p=zscore2prctile(zscore,nD,Qdof);
 
 end
